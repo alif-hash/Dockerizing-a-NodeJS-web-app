@@ -2,7 +2,13 @@ pipeline {
     agent none
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerLogin')
-        //SNYK_CREDENTIALS = credentials('SnykToken')
+        //sonar parameter
+        SONAR_PROJECT_KEY = "nodedashboard"
+        SONAR_TOKEN = "sqp_4201d29a9875e0bd65bd0281204da54974198970"
+        REPO = "alifadi"
+        IMAGE_NAME = "nodedashboard:0.1"
+        APP_NAME = "nodedashboard"
+        APP_PORT = "8080"
     }
     stages {
         stage('Secret Scanning Using Trufflehog') {
@@ -64,7 +70,7 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'sonar-scanner -Dsonar.projectKey=nodedashboard -Dsonar.qualitygate.wait=true -Dsonar.sources=. -Dsonar.host.url=http://192.168.240.1:9000 -Dsonar.token=sqp_4201d29a9875e0bd65bd0281204da54974198970' 
+                    sh "sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.qualitygate.wait=true -Dsonar.sources=. -Dsonar.host.url=http://192.168.240.1:9000 -Dsonar.token=$SONAR_TOKEN"
                 }
             }
         }
@@ -80,8 +86,8 @@ pipeline {
                   input message: 'Waiting Approval Deployment ?', ok: 'Yes'
                 }
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'docker build -t alifadi/nodedashboard:0.1 .'
-                sh 'docker push alifadi/nodedashboard:0.1'
+                sh "docker build -t $REPO/IMAGE_NAME ."
+                sh 'docker push $REPO/IMAGE_NAME'
             }
         }
         stage('Deploy Docker Image') {
@@ -94,9 +100,9 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: "DeploymentSSHKey", keyFileVariable: 'keyfile')]) {
                     sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker pull alifadi/nodedashboard:0.1'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker rm --force nodedashboard'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker run -it --detach -p 8080:8080 --name nodedashboard --network host alifadi/nodedashboard:0.1'
+                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker pull $REPO/IMAGE_NAME"
+                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker rm --force $APP_NAME"
+                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker run -it --detach -p $APP_PORT:$APP_PORT --name $APP_NAME --network host $REPO/IMAGE_NAME"
                 }
             }
         }
@@ -109,7 +115,7 @@ pipeline {
            }
            steps {
                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                   sh 'nuclei -u http://192.168.240.254:8080 -j > nuclei-report.json'
+                   sh "nuclei -u http://192.168.240.254:$APP_PORT -j > nuclei-report.json"
                    sh 'cat nuclei-report.json'
                }
                archiveArtifacts artifacts: 'nuclei-report.json'

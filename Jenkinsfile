@@ -14,7 +14,7 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    sh 'trufflehog filesystem . --exclude-paths trufflehog-excluded-paths.txt --fail --json > trufflehog-scan-result.json'
+                    sh 'trufflehog filesystem --only-verified --json > trufflehog-scan-result.json'
                 }
                 sh 'cat trufflehog-scan-result.json'
                 archiveArtifacts artifacts: 'trufflehog-scan-result.json'

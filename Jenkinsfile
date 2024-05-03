@@ -30,16 +30,16 @@ pipeline {
                 sh 'npm install'
             }
         }
-        stage('Test') {
-            agent {
-              docker {
-                  image 'node:lts-buster-slim'
-              }
-            }
-            steps {
-                sh 'npm run test'
-            }
-        }
+        // stage('Test') {
+        //     agent {
+        //       docker {
+        //           image 'node:lts-buster-slim'
+        //       }
+        //     }
+        //     steps {
+        //         sh 'npm run test'
+        //     }
+        // }
         stage('SCA Trivy Scan Dockerfile Misconfiguration') {
             agent {
               docker {

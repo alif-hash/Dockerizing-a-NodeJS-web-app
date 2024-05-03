@@ -86,8 +86,8 @@ pipeline {
                   input message: 'Waiting Approval Deployment ?', ok: 'Yes'
                 }
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh "docker build -t $REPO/IMAGE_NAME ."
-                sh 'docker push $REPO/IMAGE_NAME'
+                sh "docker build -t $REPO/$IMAGE_NAME ."
+                sh 'docker push $REPO/$IMAGE_NAME'
             }
         }
         stage('Deploy Docker Image') {
@@ -100,9 +100,9 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: "DeploymentSSHKey", keyFileVariable: 'keyfile')]) {
                     sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"'
-                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker pull $REPO/IMAGE_NAME"
+                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker pull $REPO/$IMAGE_NAME"
                     sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker rm --force $APP_NAME"
-                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker run -it --detach -p $APP_PORT:$APP_PORT --name $APP_NAME --network host $REPO/IMAGE_NAME"
+                    sh "ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.240.254 docker run -it --detach -p $APP_PORT:$APP_PORT --name $APP_NAME --network host $REPO/$IMAGE_NAME"
                 }
             }
         }

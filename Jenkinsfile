@@ -3,13 +3,12 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerLogin')
         //SNYK_CREDENTIALS = credentials('SnykToken')
-        TRUFFLEHOG_IMAGE = 'trufflesecurity/trufflehog:latest'
     }
     stages {
         stage('Secret Scanning Using Trufflehog') {
             agent {
                 docker {
-                    image '$TRUFFLEHOG_IMAGE'
+                    image 'trufflesecurity/trufflehog:latest'
                     args '-u root --entrypoint='
                 }
             }

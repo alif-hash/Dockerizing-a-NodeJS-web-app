@@ -85,7 +85,7 @@ pipeline {
                 timeout(time: 15, unit: "MINUTES"){
                   input message: 'Waiting Approval Deployment ?', ok: 'Yes'
                 }
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                 sh "docker build -t $REPO/$IMAGE_NAME ."
                 sh 'docker push $REPO/$IMAGE_NAME'
             }

@@ -4,7 +4,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('DockerLogin')
         //sonar parameter
         SONAR_PROJECT_KEY = "nodedashboard"
-        SONAR_TOKEN = "sqp_4201d29a9875e0bd65bd0281204da54974198970"
+        SONAR_TOKEN = "sqp_ef907639af33dd3ef6078d35a2eb2474b7123224"
         REPO = "alifadi"
         IMAGE_NAME = "nodedashboard:0.1"
         APP_NAME = "nodedashboard"
@@ -85,7 +85,7 @@ pipeline {
                 timeout(time: 15, unit: "MINUTES"){
                   input message: 'Waiting Approval Deployment ?', ok: 'Yes'
                 }
-                // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                 sh "docker build -t $REPO/$IMAGE_NAME ."
                 sh 'docker push $REPO/$IMAGE_NAME'
             }
